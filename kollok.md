@@ -925,28 +925,46 @@ fun main() {
 Под инкапсуляцией понимают «упаковку» данных и функций внутри общего
 компонента. Пресечение прямого доступа к некоторым атрибутам компонента.
 ```kt
-// Пример инкапсуляции
-class Car(private val model: String, private var speed: Int) {
-    fun accelerate() {
-        speed += 10
-        println("Accelerating. Current speed: $speed km/h")
+class BankAccount(private var balance: Double, private val accountNumber: String) {
+
+    // Метод для получения баланса
+    fun getBalance(): Double {
+        return balance
     }
 
-    fun brake() {
-        speed -= 5
-        println("Braking. Current speed: $speed km/h")
+    // Метод для внесения средств
+    fun deposit(amount: Double) {
+        if (amount > 0) {
+            balance += amount
+            println("$amount deposited. New balance: $balance")
+        } else {
+            println("Invalid deposit amount")
+        }
     }
 
-    fun getModel(): String {
-        return model
+    // Метод для снятия средств
+    fun withdraw(amount: Double) {
+        if (amount > 0 && amount <= balance) {
+            balance -= amount
+            println("$amount withdrawn. New balance: $balance")
+        } else {
+            println("Invalid withdrawal amount")
+        }
     }
 }
 
 fun main() {
-    val myCar = Car("Toyota", 60)
-    myCar.accelerate()
-    myCar.brake()
-    println("Car model: ${myCar.getModel()}")
+    val account = BankAccount(1000.0, "1234567890")
+
+    // Попытка прямого доступа к полям (неудачная, так как они закрыты модификатором private)
+    // println(account.balance)  // Ошибка компиляции
+    // println(account.accountNumber)  // Ошибка компиляции
+
+    // Доступ к данным через методы класса
+    println("Initial balance: ${account.getBalance()}")
+
+    account.deposit(500.0)
+    account.withdraw(200.0)
 }
 ```
 
