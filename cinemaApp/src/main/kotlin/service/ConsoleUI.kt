@@ -3,10 +3,11 @@ package service
 import entity.Movie
 import entity.Seat
 import entity.Session
-import entity.Ticket
+import java.time.LocalTime
+import java.time.format.DateTimeParseException
 import kotlin.system.exitProcess
 
-class ConsoleUI(val cinemaManager: CinemaManager) {
+class ConsoleUI(private val cinemaManager: CinemaManager) {
 
     fun run() {
         displayMenu()
@@ -14,9 +15,12 @@ class ConsoleUI(val cinemaManager: CinemaManager) {
     }
 
     fun displayMenu() {
-        println("1. Посмотреть фильмы в прокате")
-        println("2. Посмотреть сеансы на фильм")
-        println("3. Посмотреть свободные места на сеанс")
+        println("Добро пожаловать в главное меню!")
+        println("1. Осуществить продажу билета")
+        println("2. Осуществить возврат билета")
+        println("3. Посмотреть фильмы в прокате")
+        println("4. Посмотреть сеансы на фильм")
+        println("5. Посмотреть свободные места на сеанс")
 //        println("1. Продажа билетов")
 //        println("2. Возврат билетов")
 //        println("3. Отображение свободных и проданных мест для выбранного сеанса")
@@ -26,114 +30,195 @@ class ConsoleUI(val cinemaManager: CinemaManager) {
     }
 
     private fun handleUserInput() {
-        var userInput: String? = readLine()
+        print("Введите цифру от 0 до 7: ")
+        var userInput: String? = readlnOrNull()
 
-        while (userInput != "6") {
+        while (true) {
             when (userInput) {
-                "1" -> displayMovies() //sellTickets()
-                "2" -> displaySessions() //returnTickets()
-                "3" -> displaySeats() //displaySeats()
-                "4" -> print(4) //editSchedule()
-                "5" -> print(5) //markOccupiedSeats()
+                "1" -> sellTicket() //handleTicketInput()
+                "2" -> refundTicket()
+                "3" -> displayMovies() //sellTickets()
+                "4" -> displaySessions(handleMovieInput()) //returnTickets()
+                "5" -> displaySeats() //displaySeats()
+                "6" -> println(6) //editSchedule()
+                "7" -> println(7) //markOccupiedSeats()
                 "0" -> exitMenu()
-                else -> println("Неверный ввод. Пожалуйста, выберите действие от 0 до 5.")
+                else -> println("Неверный ввод. Пожалуйста, выберите действие от 0 до 7.\n")
             }
 
-            displayMenu()
-            userInput = readLine()
+            run()
         }
-
-        println("Выход из программы.")
     }
 
-    fun exitMenu() {
+    private fun handleMovieInput(): Movie? {
+        print("Введите название фильма: ")
+        val movieTitle: String = readlnOrNull().orEmpty().trim()
+
+        val movie = cinemaManager.getMovieByName(movieTitle)
+
+        if (movie == null) {
+            println("Фильма $movieTitle пока нет в прокате!\n")
+            return null
+        }
+
+        return movie
+    }
+
+    private fun exitMenu() {
         exitProcess(0)
     }
 
-    fun displayMovies() {
+    private fun displayMovies() {
         val movies = cinemaManager.getMovies()
 
         println("\nСписок фильмов, которые сейчас в прокате:")
         for (movie in movies) {
-            println("${movie.title} by ${movie.director}")
+            println("\"${movie.title}\" by ${movie.director}")
         }
         println()
     }
 
-    fun displaySeats() {
+    private fun displaySeats() {
         print("Введите id сеанса: ")
-        var sessionId = readLine()?.toIntOrNull()
+        val sessionId = readLine()?.toIntOrNull()
 
-        var session = sessionId?.let { cinemaManager.getSessionById(it) }
-
-        if (session == null) {
-            println("Сеанса с Id = $sessionId не существует!")
+        if (sessionId == null) {
+            println("ID введён некорректно!\n")
             return;
         }
 
-        val numRows = 6
-        val numSeatsPerRow = 10
+        // Если что перенести в Session как метод
+        val session = sessionId.let { cinemaManager.getSessionById(it) }
 
-        println(
-            "\nИнформация по свободным местам выбранного фильма:\n" +
-                    "- Фильм ${session.movie.title} by ${session.movie.director}\n" +
-                    "- Дата сеанса: ${session.date}\n" +
-                    "- Время начала: ${session.startTime}\n" +
-                    "- Время конца: ${session.endTime}\n" +
-                    "- Длительность фильма: ${session.duration} минут\n" +
-                    "⚪ - свободное место\n" +
-                    "\uD83D\uDD34 - занятое место"
-        )
-
-        for (row in 1..numRows) {
-            print("Ряд $row ")
-            for (seatNumber in 1..numSeatsPerRow) {
-                val seat = Seat(row, seatNumber)
-                if (session.availibleSeats.contains(seat)) {
-                    print("⚪ ")
-                } else {
-                    print("\uD83D\uDD34 ")
-                }
-            }
-            println()
+        if (session == null) {
+            println("Сеанса с ID = $sessionId не существует!\n")
+            return;
         }
 
+        println("Информация по выбранному сеансу:\n")
+        println("- ID Сеанса: $sessionId")
+        println("- Фильм \"${session.movie.title}\" by ${session.movie.director}")
+        println("- Дата сеанса: ${session.date}")
+        println("- Время начала: ${session.startTime}")
+        println("- Время конца: ${session.endTime}")
+        println("- Длительность фильма: ${session.duration} минут")
+        println("⚪ - свободное место")
+        println("\uD83D\uDD34 - занятое место")
+
+        session.viewSeats()
     }
 
-    fun displaySessions() {
-        var movieTitle: String
-        do {
-            println("Введите название фильма:")
-            movieTitle = readLine().orEmpty().trim()
-        } while (movieTitle.isBlank())
+    private fun displaySessions(movie: Movie?): Boolean {
+        return if (movie == null) false else cinemaManager.viewSessionsInfo(movie)
+    }
 
-        val movie = cinemaManager.getMovieByName(movieTitle)
-        val sessions = movie?.let { cinemaManager.getSessionsByMovie(it) }
+    private fun handleSeatInput(session: Session, mode: String): Pair<Int?, Int?> {
+        var row: Int?
+        var number: Int?
 
-        if (sessions == null) {
-            println("Такого фильма пока нет в прокате!")
-            return
-        }
+        while (true) {
+            print("Введите ряд (число от 1 до 6): ")
+            row = readLine()?.toIntOrNull()
 
-        if (sessions.isNotEmpty()) {
-            println("Сеансы для фильма '${movie.title}':")
-            sessions.forEach { session ->
-                println("Session Id: ${session.id}")
-                println("Date: ${session.date}")
-                println("Start Time: ${session.startTime}")
-                println("End Time: ${session.endTime}")
-                println("Duration: ${session.duration} minutes")
+            print("Введите номер места (число от 1 до 10): ")
+            number = readLine()?.toIntOrNull()
+
+            if (row == 0 && number == 0) {
                 println()
+                return Pair(null, null)
             }
-        } else {
-            println("Для фильма '${movie.title}' нет доступных сеансов.")
+
+            if (row == null || number == null || row !in 1..6 || number !in 1..10 || (if (mode == "buying") !session.markSeat(Seat(row, number)) else !session.releaseSeat(Seat(row, number)))) {
+                //val modeBool = if (mode == "buying") !session.markSeat(Seat(row, number)) else !session.markSeat(Seat(row, number))
+
+                println("Некорректный ввод данных о билете или же выбранное место ${if (mode == "buying") "занятно" else "свободно"}!\n" +
+                        "Для выхода в Главное меню введите Ряд 0 и Место 0. ")
+            } else {
+                break
+            }
         }
 
+        return Pair(row, number)
     }
 
-    fun displayTicketInfo(ticket: Ticket) {
+    private fun handleSessionTimeInput(): String {
+        print("Введите время начала интересующего сеанса: ")
+        var startTimeString = readlnOrNull().orEmpty().trim()
+        var startTime: LocalTime? = null
 
+        while (startTime == null && startTimeString != "-1") {
+            try {
+                startTime = LocalTime.parse(startTimeString)
+            } catch (e: DateTimeParseException) {
+                print(
+                    "Некорректно введено время сеанса! Попробуйте ввести время ещё раз или\n" +
+                            "или введите -1, чтобы вернуться в Главное меню: "
+                )
+                startTimeString = readlnOrNull().orEmpty().trim()
+            }
+        }
+
+        return startTimeString
     }
 
+    private fun handleTicketInput(): Session? {
+        // вывод фильмов в прокате ->
+        // ввод названия фильма ->
+        // вывод сеансов на фильм ->
+        // ввод времени начала нужного сеанса ->
+        // вывод свободных мест ->
+        // ввод ряда и номера места ->
+        // успешная продажа
 
+        displayMovies()
+
+        val movie = handleMovieInput() ?: return null
+        if (!displaySessions(movie)) {
+            return null
+        }
+
+        val startTime = handleSessionTimeInput()
+        if (startTime == "-1") {
+            println()
+            return null
+        }
+
+        val session = movie.let { cinemaManager.getSessionByTime(startTime, movie) }
+        if (session == null) {
+            println("Сеансов на фильм  \"${movie.title}\" в $startTime пока нет!\n")
+            return null
+        }
+
+        session.viewSeats()
+
+        return session
+//        val (row, number) = handleSeatInput(session)
+//        if (row != null && number != null)
+//        {
+//            cinemaManager.sellTicket(session, Seat(row, number))
+//            println("Место ряд: ${row}, номер: ${number} отмечено как занятое!\n")
+//        }
+    }
+
+    private fun sellTicket() {
+        val session = handleTicketInput() ?: return
+
+        val (row, number) = handleSeatInput(session, "buying")
+        if (row != null && number != null)
+        {
+            cinemaManager.sellTicket(session, Seat(row, number))
+            println("Место ряд: ${row}, номер: ${number} отмечено как занятое!\n")
+        }
+    }
+
+    private fun refundTicket() {
+        val session = handleTicketInput() ?: return
+
+        val (row, number) = handleSeatInput(session, "refunding")
+        if (row != null && number != null)
+        {
+            cinemaManager.refundTicket(session, Seat(row, number))
+            println("Место ряд: ${row}, номер: ${number} отмечено как свободное!\n")
+        }
+    }
 }

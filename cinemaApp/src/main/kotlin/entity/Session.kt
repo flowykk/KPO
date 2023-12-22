@@ -1,30 +1,29 @@
 package entity
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
+import service.CinemaManager
 import java.time.LocalTime
 import java.time.Duration
-import java.time.LocalDate
-import java.time.Period
 import java.time.format.DateTimeFormatter
-import java.util.Date
 import java.util.concurrent.atomic.AtomicInteger
 
-class Session (
+class Session @JsonCreator constructor(
     @JsonProperty("movie") val movie: Movie,
     @JsonProperty("date") val date: String,
     @JsonProperty("startTime") val startTime: String,
     @JsonProperty("endTime") val endTime: String,
 ) {
-    val availibleSeats: MutableList<Seat> = mutableListOf()
+    //@JsonIgnore
+    @JsonProperty("availableSeats")
+    private val availableSeats: MutableList<Seat> = mutableListOf()
 
     init {
-        val numRows = 6
-        val numSeatsPerRow = 10
-
-        for (row in 1..numRows) {
-            for (seatNumber in 1..numSeatsPerRow) {
+        for (row in 1..CinemaManager.numRows) {
+            for (seatNumber in 1..CinemaManager.numColumns) {
                 val seat = Seat(row, seatNumber)
-                availibleSeats.add(seat)
+                availableSeats.add(seat)
             }
         }
     }
@@ -46,19 +45,40 @@ class Session (
             return Duration.between(start, end).toMinutes().toInt()
         }
 
-    fun markSeat(row: Int, number: Int) {
-        val seat = Seat(row, number)
-        if (availibleSeats.contains(seat)) {
-            availibleSeats.remove(seat)
+    fun markSeat(seat: Seat): Boolean {
+        if (availableSeats.contains(seat)) {
+            availableSeats.remove(seat)
+            return true
         }
+
+        return false
     }
 
-    fun releaseSeat(row: Int, number: Int) {
-        val seat = Seat(row, number)
-        if (!availibleSeats.contains(seat)) {
-            availibleSeats.add(seat)
+    fun releaseSeat(seat: Seat): Boolean {
+        if (!availableSeats.contains(seat)) {
+            availableSeats.add(seat)
+            return true
         }
+
+        return false
     }
 
+    // либо сделать этот метод методом ConsoleUI
+    fun viewSeats() {
+        println("      =============ЭКРАН=============")
+        for (row in 1..CinemaManager.numRows) {
+            print("Ряд $row ")
+            for (seatNumber in 1..CinemaManager.numColumns) {
+                val seat = Seat(row, seatNumber)
+                if (availableSeats.contains(seat)) {
+                    print("⚪ ")
+                } else {
+                    print("\uD83D\uDD34 ")
+                }
+            }
+            println()
+        }
+        println()
+    }
 
 }

@@ -32,8 +32,14 @@ fun main() {
 
     // Создаем объект Entity.Movie
     // LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")).toString()
-    val movie = Movie("Meet Joe Black", "Director")
-    val movie2 = Movie("Quite Place", "Director")
+    val movie = Movie("Meet Joe Black", "Director1")
+    val movie2 = Movie("Quite Place", "Director2")
+    val movie3 = Movie("Soul", "Director3")
+
+    cinemaManager.addMovie(movie)
+    cinemaManager.addMovie(movie2)
+    cinemaManager.addMovie(movie3)
+
     cinemaManager.addSession(
         movie,
         LocalDate.of(2004, 11, 26).toString(),
@@ -55,16 +61,22 @@ fun main() {
     cinemaManager.addSession(
         movie,
         LocalDate.of(2004, 12, 26).toString(),
-        LocalTime.of(14, 30).toString(),
+        LocalTime.of(14, 40).toString(),
         LocalTime.of(16, 50).toString()
     )
 
-    cinemaManager.getSessionById(1)?.markSeat(1,6)
-    cinemaManager.getSessionById(2)?.markSeat(2,6)
-    cinemaManager.getSessionById(3)?.markSeat(3,6)
-    cinemaManager.getSessionById(4)?.markSeat(4,6)
+    cinemaManager.getSessionById(1)?.markSeat(Seat(1,6))
+    cinemaManager.getSessionById(2)?.markSeat(Seat(2,6))
+    cinemaManager.getSessionById(3)?.markSeat(Seat(3,6))
+    cinemaManager.getSessionById(4)?.markSeat(Seat(4,6))
+    //cinemaManager.getSessionById(1)?.releaseSeat(Seat(1, 6))
 
-    cinemaManager.saveSessionsToFile()
+    cinemaManager.addSession(
+        movie2,
+        LocalDate.of(2004, 12, 30).toString(),
+        LocalTime.of(20, 30).toString(),
+        LocalTime.of(21, 50).toString()
+    )
 
     consoleUI.run()
 
