@@ -1,5 +1,6 @@
 package service
 
+import MovieModes
 import entity.Movie
 import entity.Seat
 import entity.Session
@@ -7,7 +8,7 @@ import entity.Ticket
 import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 
-class CinemaManager(private val cinemaHandler: CinemaHandler) {
+class CinemaManager(private val cinemaFileHandler: CinemaFileHandler) {
 
     private val movies: MutableSet<Movie> = mutableSetOf()
     private val sessions: MutableList<Session> = mutableListOf()
@@ -25,7 +26,9 @@ class CinemaManager(private val cinemaHandler: CinemaHandler) {
         sessions.add(newSession)
         sessions.sortWith(compareBy(Session::date, Session::startTime))
 
-        cinemaHandler.saveSessions(sessions)
+        cinemaFileHandler.saveSessions(sessions)
+
+        println("Сеанс успешно добавлен!\n")
     }
 
     fun sellTicket(ticketSession: Session, ticketSeat: Seat) {
@@ -38,8 +41,8 @@ class CinemaManager(private val cinemaHandler: CinemaHandler) {
             }
         }
 
-        cinemaHandler.saveTickets(tickets)
-        cinemaHandler.saveSessions(sessions)
+        cinemaFileHandler.saveTickets(tickets)
+        cinemaFileHandler.saveSessions(sessions)
 
         println("Билет успешно продан!\n${ticket.getTicketInfo()}")
     }
@@ -60,16 +63,46 @@ class CinemaManager(private val cinemaHandler: CinemaHandler) {
             }
         }
 
-        cinemaHandler.saveTickets(tickets)
-        cinemaHandler.saveSessions(sessions)
+        cinemaFileHandler.saveTickets(tickets)
+        cinemaFileHandler.saveSessions(sessions)
 
         println("Билет успешно возвращён!\n${refTicket.getTicketInfo()}")
+    }
+
+    fun editMovie(editingMovie: Movie, mode: MovieModes, data: String) {
+        for (movie in movies) {
+            if (movie.title == editingMovie.title) {
+                if (mode == MovieModes.EDITNAME) {
+                    movie.mutableTitle = data
+                } else {
+                    movie.mutableDirector = data
+                }
+            }
+        }
+
+        // change movie in sessions
     }
 
     fun addMovie(movie: Movie) {
         movies.add(movie)
 
-        cinemaHandler.saveMovies(movies)
+        cinemaFileHandler.saveMovies(movies)
+
+        println("Фильм успешно добавлен в прокат!\n")
+    }
+
+    fun deleteMovie(movie: Movie) {
+        movies.remove(movie)
+        deleteSessionsByMovie(movie)
+
+        cinemaFileHandler.saveMovies(movies)
+        cinemaFileHandler.saveSessions(sessions)
+
+        println("Фильм успешно удалён из проката!\n")
+    }
+
+    private fun deleteSessionsByMovie(movie: Movie) {
+        sessions.removeIf { it.movie == movie }
     }
 
     private fun getSessionsByMovie(movie: Movie): List<Session> {
@@ -87,6 +120,7 @@ class CinemaManager(private val cinemaHandler: CinemaHandler) {
 //        return movieSessions
     }
 
+    // should go SessionHandler
     fun viewSessionsInfo(movie: Movie): Boolean {
         val sessions = getSessionsByMovie(movie)
 
@@ -102,7 +136,7 @@ class CinemaManager(private val cinemaHandler: CinemaHandler) {
             }
             return true
         } else {
-            println("Для фильма '${movie.title}' нет доступных сеансов.\n")
+            println("Для фильма \"${movie.title}\" нет доступных сеансов.\n")
         }
         return false
     }
@@ -116,7 +150,7 @@ class CinemaManager(private val cinemaHandler: CinemaHandler) {
     }
 
     fun getMovieByName(movieTitle: String): Movie? {
-        return movies.find { it.title == movieTitle }
+        return movies.find { it.title.lowercase() == movieTitle.lowercase() }
     }
 
     fun getSessionByTime(startTime: String, movie: Movie): Session? {

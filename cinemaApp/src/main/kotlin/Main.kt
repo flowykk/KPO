@@ -5,23 +5,19 @@ import service.CinemaManager
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import entity.Seat
-import service.CinemaHandler
+import service.CinemaFileHandler
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 
 var username = ""
 
 fun main() {
 
-    val cinemaHandler = CinemaHandler()
+    val cinemaFileHandler = CinemaFileHandler()
 
-    val cinemaManager = CinemaManager(cinemaHandler)
+    val cinemaManager = CinemaManager(cinemaFileHandler)
 //    cinemaManager.loadInitialData() // Загрузка данных из файлов
 
     val consoleUI = ConsoleUI(cinemaManager)
@@ -78,7 +74,7 @@ fun main() {
         LocalTime.of(21, 50).toString()
     )
 
-    consoleUI.run()
+    consoleUI.getMainMenuHandler.run()
 
 //
 //    val filePath = "Data/movie.json";

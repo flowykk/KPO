@@ -6,7 +6,7 @@ import entity.Session
 import entity.Ticket
 import java.io.File
 
-class CinemaHandler() {
+class CinemaFileHandler() {
     private val dataFolderPath = "Data" // Папка для хранения файлов данных
     private val objectMapper = ObjectMapper()
 
