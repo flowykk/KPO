@@ -1,7 +1,6 @@
 package entity
 
 import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import service.CinemaManager
 import java.time.LocalTime
