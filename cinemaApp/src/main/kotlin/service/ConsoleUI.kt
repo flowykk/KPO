@@ -11,7 +11,7 @@ import java.time.format.DateTimeParseException
 import kotlin.system.exitProcess
 
 class ConsoleUI(private val cinemaManager: CinemaManager) {
-    private val mainMenuHandler = MainMenuHandler(cinemaManager, this)
+    private val mainMenuHandler = MainMenuHandler(this)
     private val movieHandler = MovieHandler(cinemaManager, this)
 
     val getMainMenuHandler: MainMenuHandler
@@ -189,14 +189,5 @@ class ConsoleUI(private val cinemaManager: CinemaManager) {
         {
             cinemaManager.refundTicket(session, Seat(row, number))
         }
-    }
-
-    fun capitalizeFirst(data: String): String {
-        return data.substring(0, 1).uppercase() + data.substring(1)
-    }
-
-    fun isLatin(data: String): Boolean {
-        val regex = Regex("^\\s*[a-zA-Z]+(\\s+[a-zA-Z]+){0,2}\\s*$")
-        return data.matches(regex)
     }
 }

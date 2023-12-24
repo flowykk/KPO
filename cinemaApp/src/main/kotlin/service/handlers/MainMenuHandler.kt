@@ -4,7 +4,6 @@ import service.CinemaManager
 import service.ConsoleUI
 
 class MainMenuHandler(
-    private val cinemaManager: CinemaManager,
     private val consoleUI: ConsoleUI
 ) {
 
@@ -20,7 +19,7 @@ class MainMenuHandler(
         println("3. Посмотреть фильмы в прокате")
         println("4. Посмотреть сеансы на фильм")
         println("5. Посмотреть свободные места на сеанс")
-        println("6. Изменить данные о фильма")
+        println("6. Изменить данные о фильмах")
         println("7. Изменить данные о сеансах")
         println("0. Выход")
     }

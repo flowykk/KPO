@@ -1,3 +1,4 @@
+import auth.*
 import entity.Movie
 
 import service.ConsoleUI
@@ -10,17 +11,19 @@ import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 
-
-var username = ""
-
 fun main() {
 
     val cinemaFileHandler = CinemaFileHandler()
+    val userFileHandler = UserFileHandler()
 
     val cinemaManager = CinemaManager(cinemaFileHandler)
+    val userManager = UserManager(userFileHandler)
 //    cinemaManager.loadInitialData() // Загрузка данных из файлов
 
+    val auth = AuthService(userManager)
+
     val consoleUI = ConsoleUI(cinemaManager)
+    val authHandler = AuthHandler(auth, consoleUI)
 
     // Отобразить главное меню и начать обработку ввода пользователя
 
@@ -73,6 +76,15 @@ fun main() {
         LocalTime.of(20, 30).toString(),
         LocalTime.of(21, 50).toString()
     )
+
+    userManager.addUser(
+        User(
+            "flowykk", "flowykk"
+            // password to auth is "password"
+        )
+    )
+
+    //authHandler.run()
 
     consoleUI.getMainMenuHandler.run()
 

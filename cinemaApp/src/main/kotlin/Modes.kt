@@ -4,3 +4,9 @@ enum class MovieModes {
     EDITNAME,
     EDITDIRECTOR
 }
+
+enum class InfoModes {
+    DIRECTOR,
+    USERNAME,
+    PASSWORD
+}

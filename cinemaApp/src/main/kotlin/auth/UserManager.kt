@@ -1,6 +1,6 @@
 package auth
 
-class UserManager() {
+class UserManager(private val userFileHandler: UserFileHandler) {
     private val users: MutableList<User> = mutableListOf()
 
     fun getAll(): List<User> {
@@ -9,6 +9,8 @@ class UserManager() {
 
     fun addUser(user: User) {
         users.add(user)
+
+        userFileHandler.saveUsers(users)
     }
 
     fun getUserByUsername(username: String): User? {

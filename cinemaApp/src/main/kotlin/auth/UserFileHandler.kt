@@ -8,19 +8,17 @@ class UserFileHandler {
     private val dataFolderPath = "Data" // Папка для хранения файлов данных
     private val objectMapper = ObjectMapper()
 
-    private val usersFilePath = "/sessions.json"
+    private val usersFilePath = "/users.json"
 
-    fun saveUsers(movies: List<Session>) {
-        // Сохранить список фильмов в файл
+    fun saveUsers(movies: List<User>) {
         val data = objectMapper.writeValueAsString(movies)
-        saveToFile(usersFilePath, data)
+        saveToFile(data)
     }
 
-    private fun saveToFile(fileName: String, content: String) {
+    private fun saveToFile(content: String) {
         // Записать содержимое в файл
-        File("$dataFolderPath/$fileName").writeText(content)
+        File("$dataFolderPath/$usersFilePath").writeText(content)
     }
-
 
     private fun readFromFile(fileName: String): String {
         // Прочитать содержимое из файла

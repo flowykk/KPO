@@ -5,16 +5,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class Movie @JsonCreator constructor(
-    @JsonProperty("title") val title: String,
-    @JsonProperty("director") val director: String
+    @JsonProperty("title") var title: String,
+    @JsonProperty("director") var director: String
 )
 {
-    @JsonIgnore
-    var mutableTitle: String = "default"
-        set(value) {
-            // Выполняйте здесь необходимые действия перед установкой значения
-            field = value
-        }
+//    var mutableTitle: String
+//        get() = title
+//        set(value) {
+//            // Выполняйте здесь необходимые действия перед установкой значения
+//            title = value
+//        }
 
     @JsonIgnore
     var mutableDirector: String = "default"

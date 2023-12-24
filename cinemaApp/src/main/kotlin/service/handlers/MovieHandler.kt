@@ -4,12 +4,14 @@ import MovieModes
 import entity.Movie
 import service.CinemaManager
 import service.ConsoleUI
+import service.util.capitalizeFirst
+import service.util.isDirector
+import service.util.isMovieTitle
 
 class MovieHandler(
     private val cinemaManager: CinemaManager,
     private val consoleUI: ConsoleUI
 ) {
-
     fun run() {
         displayMenu()
         handleMenuInput()
@@ -59,12 +61,11 @@ class MovieHandler(
             var title: String = readlnOrNull().orEmpty().trim().lowercase()
             if (title == "00") {
                 break
-            } else if (title.isEmpty()) {
-                println("Название фильма не может быть пустым!\n" +
+            } else if (title.isEmpty() || !isMovieTitle(title)) {
+                println("Название фильма введено некорректно!\n" +
                         "Повторите ввод ещё раз или введите 00 для выхода в меню.")
                 continue
             }
-            title = consoleUI.capitalizeFirst(title)
 
             movie = cinemaManager.getMovieByName(title)
             if (((movie == null) && mode == MovieModes.SEARCH) || ((movie != null) && mode == MovieModes.ADD)) {
@@ -79,10 +80,10 @@ class MovieHandler(
                         director = readlnOrNull().orEmpty().trim().lowercase()
 
                         if (director == "00") {
-                            break
+                            return null
                         }
 
-                        if (!consoleUI.isLatin(director)) {
+                        if (!isDirector(director)) {
                             println("Режиссёр введён некорректно!\n" +
                                     "Повторите ввод ещё раз или введите 00 для выхода в меню.")
                         } else {
@@ -90,7 +91,8 @@ class MovieHandler(
                         }
                     }
 
-                    director = consoleUI.capitalizeFirst(director)
+                    director = capitalizeFirst(director)
+                    title = capitalizeFirst(title)
 
                     movie = Movie(title, director)
                 }
@@ -99,7 +101,7 @@ class MovieHandler(
             }
         }
 
-        println()
+        // println()
         return movie
     }
 
@@ -112,22 +114,26 @@ class MovieHandler(
         var data: String
 
         while (true) {
-            print("Введите ${if (mode == MovieModes.EDITNAME) "новое название" else "нового режиссёра"} фильма:")
+            print("Введите ${if (mode == MovieModes.EDITNAME) "новое название" else "нового режиссёра"} фильма: ")
             data = readlnOrNull().orEmpty().trim().lowercase()
 
             if (data == "00") {
                 break
             }
 
-            if (!consoleUI.isLatin(data)) {
-                println("Режиссёр введён некорректно!\n" +
+            if (!isDirector(data)) {
+                println("${if (mode == MovieModes.EDITNAME) "Название фильма введено" else "Режиссёр введён"} некорректно!\n" +
                         "Повторите ввод ещё раз или введите 00 для выхода в меню.")
             } else {
                 break
             }
         }
 
-        cinemaManager.editMovie(movie, mode, data)
+        if (cinemaManager.editMovie(movie, mode, data)) {
+            println("Изменения произошли успешно!\n")
+        } else {
+            println("Изменения не могут быть произведены! Возможно, Вы пытаетесь изменить данные на оригинальные.")
+        }
     }
 
     private fun addMovie() {

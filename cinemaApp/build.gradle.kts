@@ -18,6 +18,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module", "jackson-module-kotlin", "2.12.4")
     implementation("com.fasterxml.jackson.datatype", "jackson-datatype-jsr310")
     implementation("org.hibernate.validator", "hibernate-validator", "7.0.1.Final")
+    implementation("org.mindrot", "jbcrypt","0.4")
 }
 
 tasks.test {

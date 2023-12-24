@@ -69,18 +69,29 @@ class CinemaManager(private val cinemaFileHandler: CinemaFileHandler) {
         println("Билет успешно возвращён!\n${refTicket.getTicketInfo()}")
     }
 
-    fun editMovie(editingMovie: Movie, mode: MovieModes, data: String) {
+    fun editMovie(editingMovie: Movie, mode: MovieModes, data: String): Boolean {
         for (movie in movies) {
-            if (movie.title == editingMovie.title) {
+            if (movie.title.lowercase() == editingMovie.title.lowercase()) {
                 if (mode == MovieModes.EDITNAME) {
-                    movie.mutableTitle = data
+                    if (movie.title.lowercase() == data.lowercase()) {
+                        return false
+                    }
+                    movie.title = data
                 } else {
-                    movie.mutableDirector = data
+                    if (movie.director == data.lowercase()) {
+                        return false
+                    }
+                    movie.director = data
                 }
             }
         }
 
         // change movie in sessions
+
+
+        cinemaFileHandler.saveMovies(movies)
+
+        return true
     }
 
     fun addMovie(movie: Movie) {
