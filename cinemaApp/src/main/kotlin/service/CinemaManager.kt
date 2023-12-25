@@ -5,71 +5,48 @@ import entity.Movie
 import entity.Seat
 import entity.Session
 import entity.Ticket
-import java.text.SimpleDateFormat
-import java.time.format.DateTimeFormatter
 
-class CinemaManager(private val cinemaFileHandler: CinemaFileHandler) {
+interface CinemaManagerMovieEntity {
+    fun getMovies(): MutableSet<Movie>
+    fun getMovieByName(movieTitle: String): Movie?
+    fun editMovie(editingMovie: Movie, mode: MovieModes, data: String): Boolean
+    fun addMovie(movie: Movie)
+    fun deleteMovie(movie: Movie)
+}
+
+interface CinemaManagerSessionEntity {
+    fun addSession(movie: Movie, date: String, startTime: String, endTime: String)
+    fun deleteSession(deletingSession: Session)
+    fun editSessionDate(editingSession: Session, date: String)
+    fun editSessionTime(editingSession: Session, newStartTime: String, newEndTime: String)
+    fun deleteSessionsByMovie(movie: Movie)
+    fun getSessionsByMovie(movie: Movie): List<Session>
+    fun viewSessionsInfo(movie: Movie): Boolean
+    fun getSessionById(sessionId: Int): Session?
+    fun getSessionByTime(startTime: String, movie: Movie): Session?
+}
+
+interface CinemaManagerTicketEntity {
+    fun sellTicket(ticketSession: Session, ticketSeat: Seat)
+    fun refundTicket(refTicketSession: Session, refTicketSeat: Seat)
+}
+
+class CinemaManager(private val cinemaFileHandler: CinemaFileHandler) : CinemaManagerMovieEntity,
+    CinemaManagerSessionEntity, CinemaManagerTicketEntity {
 
     private val movies: MutableSet<Movie> = mutableSetOf()
     private val sessions: MutableList<Session> = mutableListOf()
     private val tickets: MutableList<Ticket> = mutableListOf()
 
-    private val dateFormat = SimpleDateFormat("dd/M/yyyy")
-    private val timeFormat = DateTimeFormatter.ofPattern("HH:mm")
-
-    companion object {
-        const val numRows = 6
-        const val numColumns = 10
-    }
-    fun addSession(movie: Movie, date: String, startTime: String, endTime: String) {
-        val newSession = Session(movie, date, startTime, endTime)
-        sessions.add(newSession)
-        sessions.sortWith(compareBy(Session::date, Session::startTime))
-
-        cinemaFileHandler.saveSessions(sessions)
-
-        println("Сеанс успешно добавлен!\n")
+    override fun getMovies(): MutableSet<Movie> {
+        return movies
     }
 
-    fun sellTicket(ticketSession: Session, ticketSeat: Seat) {
-        val ticket = Ticket(ticketSession, ticketSeat)
-        tickets.add(ticket)
-
-        for(session in sessions) {
-            if (session == ticketSession) {
-                session.markSeat(ticketSeat)
-            }
-        }
-
-        cinemaFileHandler.saveTickets(tickets)
-        cinemaFileHandler.saveSessions(sessions)
-
-        println("Билет успешно продан!\n${ticket.getTicketInfo()}")
+    override fun getMovieByName(movieTitle: String): Movie? {
+        return movies.find { it.title.lowercase() == movieTitle.lowercase() }
     }
 
-    fun refundTicket(refTicketSession: Session, refTicketSeat: Seat) {
-        val refTicket = Ticket(refTicketSession, refTicketSeat)
-
-        for (ticket in tickets) {
-            if (ticket.session == refTicketSession) {
-                tickets.remove(ticket)
-                break
-            }
-        }
-
-        for(session in sessions) {
-            if (session == refTicketSession) {
-                session.releaseSeat(refTicketSeat)
-            }
-        }
-
-        cinemaFileHandler.saveTickets(tickets)
-        cinemaFileHandler.saveSessions(sessions)
-
-        println("Билет успешно возвращён!\n${refTicket.getTicketInfo()}")
-    }
-
-    fun editMovie(editingMovie: Movie, mode: MovieModes, data: String): Boolean {
+    override fun editMovie(editingMovie: Movie, mode: MovieModes, data: String): Boolean {
         for (movie in movies) {
             if (movie.title.lowercase() == editingMovie.title.lowercase()) {
                 if (mode == MovieModes.EDITNAME) {
@@ -86,15 +63,13 @@ class CinemaManager(private val cinemaFileHandler: CinemaFileHandler) {
             }
         }
 
-        // change movie in sessions
-
-
+        cinemaFileHandler.saveSessions(sessions)
         cinemaFileHandler.saveMovies(movies)
 
         return true
     }
 
-    fun addMovie(movie: Movie) {
+    override fun addMovie(movie: Movie) {
         movies.add(movie)
 
         cinemaFileHandler.saveMovies(movies)
@@ -102,7 +77,7 @@ class CinemaManager(private val cinemaFileHandler: CinemaFileHandler) {
         println("Фильм успешно добавлен в прокат!\n")
     }
 
-    fun deleteMovie(movie: Movie) {
+    override fun deleteMovie(movie: Movie) {
         movies.remove(movie)
         deleteSessionsByMovie(movie)
 
@@ -112,39 +87,24 @@ class CinemaManager(private val cinemaFileHandler: CinemaFileHandler) {
         println("Фильм успешно удалён из проката!\n")
     }
 
-    private fun deleteSessionsByMovie(movie: Movie) {
-        sessions.removeIf { it.movie == movie }
-    }
-
-    private fun getSessionsByMovie(movie: Movie): List<Session> {
+    override fun getSessionsByMovie(movie: Movie): List<Session> {
         return sessions.filter { it.movie.title == movie.title }
-
-//        val movieSessions: MutableList<Session> = mutableListOf()
-//
-//        for (session in sessions) {
-//            if (movie == session.movie)
-//            {
-//                movieSessions.add(session)
-//            }
-//        }
-//
-//        return movieSessions
     }
 
-    // should go SessionHandler
-    fun viewSessionsInfo(movie: Movie): Boolean {
+    override fun getSessionById(sessionId: Int): Session? {
+        return sessions.find { it.getId() == sessionId }
+    }
+
+    override fun getSessionByTime(startTime: String, movie: Movie): Session? {
+        return sessions.find { it.movie.title == movie.title && it.startTime == startTime }
+    }
+
+    override fun viewSessionsInfo(movie: Movie): Boolean {
         val sessions = getSessionsByMovie(movie)
 
         if (sessions.isNotEmpty()) {
             println("Сеансы для фильма '${movie.title}':\n")
-            sessions.forEach { session ->
-                println("Session Id: ${session.id}")
-                println("Date: ${session.date}")
-                println("Start Time: ${session.startTime}")
-                println("End Time: ${session.endTime}")
-                println("Duration: ${session.duration} minutes")
-                println()
-            }
+            for (session in sessions) session.viewInfo()
             return true
         } else {
             println("Для фильма \"${movie.title}\" нет доступных сеансов.\n")
@@ -152,22 +112,100 @@ class CinemaManager(private val cinemaFileHandler: CinemaFileHandler) {
         return false
     }
 
-    fun getSessionById(sessionId: Int): Session? {
-        return sessions.find { it.id == sessionId }
+    override fun addSession(movie: Movie, date: String, startTime: String, endTime: String) {
+        val newSession = Session(movie, date, startTime, endTime)
+        sessions.add(newSession)
+        sessions.sortWith(compareBy(Session::date, Session::startTime))
+
+        cinemaFileHandler.saveSessions(sessions)
+
+        println("Сеанс успешно добавлен!\n")
     }
 
-    fun getMovies(): MutableSet<Movie> {
-        return movies
+    override fun deleteSession(deletingSession: Session) {
+        for (session in sessions) {
+            if (deletingSession.getId() == session.getId()) {
+                sessions.remove(session)
+                break
+            }
+        }
+
+        cinemaFileHandler.saveSessions(sessions)
+
+        println("Сеанс успешно удалён!\n")
     }
 
-    fun getMovieByName(movieTitle: String): Movie? {
-        return movies.find { it.title.lowercase() == movieTitle.lowercase() }
+    override fun editSessionDate(editingSession: Session, date: String) {
+        for (session in sessions) {
+            if (session.getId() == editingSession.getId()) {
+                session.date = date
+            }
+        }
+
+        cinemaFileHandler.saveSessions(sessions)
+
+        println("Изменения произошли успешно!\n")
     }
 
-    fun getSessionByTime(startTime: String, movie: Movie): Session? {
-        return sessions.find { it.movie.title == movie.title && it.startTime == startTime }
+    override fun editSessionTime(editingSession: Session, newStartTime: String, newEndTime: String) {
+        for (session in sessions) {
+            if (session.getId() == editingSession.getId()) {
+                session.startTime = newStartTime
+                session.endTime = newEndTime
+            }
+        }
 
+        cinemaFileHandler.saveSessions(sessions)
+
+        println("Изменения произошли успешно!\n")
     }
 
-    // ... другие методы ...
+    override fun deleteSessionsByMovie(movie: Movie) {
+        sessions.removeIf { it.movie == movie }
+    }
+
+    override fun sellTicket(ticketSession: Session, ticketSeat: Seat) {
+        val ticket = Ticket(ticketSession, ticketSeat)
+        tickets.add(ticket)
+
+        for (session in sessions) {
+            if (session == ticketSession) {
+                session.markSeat(ticketSeat)
+            }
+        }
+
+        cinemaFileHandler.saveTickets(tickets)
+        cinemaFileHandler.saveSessions(sessions)
+
+        println("Билет успешно продан!")
+        ticket.viewInfo()
+    }
+
+    override fun refundTicket(refTicketSession: Session, refTicketSeat: Seat) {
+        val refTicket = Ticket(refTicketSession, refTicketSeat)
+
+        for (ticket in tickets) {
+            if (ticket.session == refTicketSession) {
+                tickets.remove(ticket)
+                break
+            }
+        }
+
+        for (session in sessions) {
+            if (session == refTicketSession) {
+                session.releaseSeat(refTicketSeat)
+            }
+        }
+
+        cinemaFileHandler.saveTickets(tickets)
+        cinemaFileHandler.saveSessions(sessions)
+
+        println("Билет успешно возвращён!")
+        refTicket.viewInfo()
+    }
+
+    companion object {
+        const val numRows = 6
+        const val numColumns = 10
+    }
 }

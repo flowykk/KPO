@@ -1,7 +1,13 @@
 package service.util
 
 import InfoModes
+import java.security.MessageDigest
+import java.time.format.DateTimeFormatter
 
+const val currentTime = "14:00"
+const val currentDate = "2004.12.26"
+val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
 
 fun handleStringInput(message: String, errorMessage: String, mode: InfoModes): String {
     var data: String
@@ -25,6 +31,13 @@ fun handleStringInput(message: String, errorMessage: String, mode: InfoModes): S
     }
 
     return data
+}
+
+fun sha256(input: String): String {
+    val bytes = input.toByteArray()
+    val md = MessageDigest.getInstance("SHA-256")
+    val digest = md.digest(bytes)
+    return digest.joinToString("") { "%02x".format(it) }
 }
 
 fun capitalizeFirst(data: String): String {

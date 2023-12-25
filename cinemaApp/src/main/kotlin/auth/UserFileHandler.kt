@@ -1,27 +1,25 @@
 package auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import entity.Session
 import java.io.File
 
-class UserFileHandler {
-    private val dataFolderPath = "Data" // Папка для хранения файлов данных
-    private val objectMapper = ObjectMapper()
+interface UserFileHandlerEntity {
+    fun saveUsers(movies: List<User>)
+    fun saveToFile(content: String)
+}
 
+class UserFileHandler : UserFileHandlerEntity {
+    private val dataFolderPath = "Data"
     private val usersFilePath = "/users.json"
 
-    fun saveUsers(movies: List<User>) {
+    private val objectMapper = ObjectMapper()
+
+    override fun saveUsers(movies: List<User>) {
         val data = objectMapper.writeValueAsString(movies)
         saveToFile(data)
     }
 
-    private fun saveToFile(content: String) {
-        // Записать содержимое в файл
+    override fun saveToFile(content: String) {
         File("$dataFolderPath/$usersFilePath").writeText(content)
-    }
-
-    private fun readFromFile(fileName: String): String {
-        // Прочитать содержимое из файла
-        return File("$dataFolderPath/$fileName").readText()
     }
 }

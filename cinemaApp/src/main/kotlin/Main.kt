@@ -4,10 +4,8 @@ import entity.Movie
 import service.ConsoleUI
 import service.CinemaManager
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import entity.Seat
 import service.CinemaFileHandler
-import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -18,19 +16,12 @@ fun main() {
 
     val cinemaManager = CinemaManager(cinemaFileHandler)
     val userManager = UserManager(userFileHandler)
-//    cinemaManager.loadInitialData() // Загрузка данных из файлов
 
     val auth = AuthService(userManager)
 
     val consoleUI = ConsoleUI(cinemaManager)
     val authHandler = AuthHandler(auth, consoleUI)
 
-    // Отобразить главное меню и начать обработку ввода пользователя
-
-    //consoleUI.handleUserInput()
-
-    // Создаем объект Entity.Movie
-    // LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")).toString()
     val movie = Movie("Meet Joe Black", "Director1")
     val movie2 = Movie("Quite Place", "Director2")
     val movie3 = Movie("Soul", "Director3")
@@ -41,34 +32,33 @@ fun main() {
 
     cinemaManager.addSession(
         movie,
-        LocalDate.of(2004, 11, 26).toString(),
+        "2004.11.26",
         LocalTime.of(14, 30).toString(),
         LocalTime.of(15, 50).toString()
     )
     cinemaManager.addSession(
         movie2,
-        LocalDate.of(2004, 12, 26).toString(),
+        "2004.12.26",
         LocalTime.of(15, 30).toString(),
         LocalTime.of(15, 50).toString()
     )
     cinemaManager.addSession(
         movie,
-        LocalDate.of(2004, 12, 26).toString(),
+        "2004.12.26",
         LocalTime.of(13, 30).toString(),
         LocalTime.of(16, 50).toString()
     )
     cinemaManager.addSession(
         movie,
-        LocalDate.of(2004, 12, 26).toString(),
+        "2004.12.26",
         LocalTime.of(14, 40).toString(),
         LocalTime.of(16, 50).toString()
     )
 
-    cinemaManager.getSessionById(1)?.markSeat(Seat(1,6))
-    cinemaManager.getSessionById(2)?.markSeat(Seat(2,6))
-    cinemaManager.getSessionById(3)?.markSeat(Seat(3,6))
-    cinemaManager.getSessionById(4)?.markSeat(Seat(4,6))
-    //cinemaManager.getSessionById(1)?.releaseSeat(Seat(1, 6))
+    cinemaManager.getSessionById(1)?.markSeat(Seat(1, 6))
+    cinemaManager.getSessionById(2)?.markSeat(Seat(2, 6))
+    cinemaManager.getSessionById(3)?.markSeat(Seat(3, 6))
+    cinemaManager.getSessionById(4)?.markSeat(Seat(4, 6))
 
     cinemaManager.addSession(
         movie2,
@@ -79,40 +69,10 @@ fun main() {
 
     userManager.addUser(
         User(
-            "flowykk", "flowykk"
-            // password to auth is "password"
+            "flowykk", "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1"
+            // password to test auth is "pass"
         )
     )
 
-    //authHandler.run()
-
-    consoleUI.getMainMenuHandler.run()
-
-//
-//    val filePath = "Data/movie.json";
-//
-//    // Записываем в файл JSON
-//    writeToJsonFile(movie, filePath)
-//
-//    // Читаем из файла JSON
-//    val loadedMovie = readFromJsonFile(filePath)
-//
-//    // Выводим информацию о фильме на экран
-//    println("Loaded Entity.Movie: $loadedMovie")
-}
-
-fun writeToJsonFile(movie: Movie, fileName: String) {
-    // Создаем объект ObjectMapper
-    val objectMapper = ObjectMapper()
-
-    // Записываем объект Entity.Movie в файл JSON
-    objectMapper.writeValue(File(fileName), movie)
-}
-
-fun readFromJsonFile(fileName: String): Movie {
-    // Создаем объект ObjectMapper
-    val objectMapper = ObjectMapper()
-
-    // Читаем объект Entity.Movie из файла JSON
-    return objectMapper.readValue(File(fileName), Movie::class.java)
+    authHandler.run()
 }

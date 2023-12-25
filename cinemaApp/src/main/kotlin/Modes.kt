@@ -10,3 +10,8 @@ enum class InfoModes {
     USERNAME,
     PASSWORD
 }
+
+enum class SessionModes {
+    START,
+    END
+}

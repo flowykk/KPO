@@ -1,24 +1,31 @@
 package auth
 
-class UserManager(private val userFileHandler: UserFileHandler) {
+interface UserManagerEntity {
+    fun getAll(): List<User>
+    fun addUser(user: User)
+    fun getUserByUsername(username: String): User?
+    fun isValidCredentials(username: String, password: String): Boolean
+}
+
+class UserManager(private val userFileHandler: UserFileHandler) : UserManagerEntity {
     private val users: MutableList<User> = mutableListOf()
 
-    fun getAll(): List<User> {
+    override fun getAll(): List<User> {
         return users
     }
 
-    fun addUser(user: User) {
+    override fun addUser(user: User) {
         users.add(user)
 
         userFileHandler.saveUsers(users)
     }
 
-    fun getUserByUsername(username: String): User? {
-        return users.find { it.username == username }
+    override fun getUserByUsername(username: String): User? {
+        return users.find { it.getUsername() == username }
     }
 
-    fun isValidCredentials(username: String, password: String): Boolean {
+    override fun isValidCredentials(username: String, password: String): Boolean {
         val user = getUserByUsername(username)
-        return user?.password == password
+        return user?.getPasswordHash() == password
     }
 }

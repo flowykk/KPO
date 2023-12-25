@@ -1,67 +1,67 @@
 package auth
 
-import service.ConsoleUI
 import service.util.handleStringInput
-import org.mindrot.jbcrypt.BCrypt
+import service.util.sha256
 
-class AuthService(private val userManager: UserManager) {
-    private var currentUser: User? = null
+interface AuthServiceEntity {
+    fun registerUser(): Boolean
+    fun authenticateUser(): Boolean
+}
 
-    fun registerUser(): Boolean {
+class AuthService(private val userManager: UserManager) : AuthServiceEntity {
+    override fun registerUser(): Boolean {
         println("Введите данные для регистрации.")
-        val username = handleStringInput("Введите имя пользователя: ", "Имя пользователя введено некорректно!\n" +
-                "Имя пользователя должно состоять из не менее чем 6-ти латинских букв или цифр!", InfoModes.USERNAME)
+        val username = handleStringInput(
+            "Введите имя пользователя: ", "Имя пользователя введено некорректно!\n" +
+                    "Имя пользователя должно состоять из не менее чем 6-ти латинских букв или цифр!", InfoModes.USERNAME
+        )
 
         if (username.isEmpty()) {
             return false
         }
 
-        if (userManager.getAll().any { it.username == username }) {
+        if (userManager.getAll().any { it.getUsername() == username }) {
             println("Пользователь с именем \"$username\" уже существует.")
             return false
         }
 
-        val password = handleStringInput("Придумайте свой пароль: ", "Пароль введён некорректно!\n" +
-                "Пароль должен состоять из не менее чем 4-ёх латинских букв или цифр!", InfoModes.PASSWORD)
-        //val hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt())
+        val password = handleStringInput(
+            "Придумайте свой пароль: ", "Пароль введён некорректно!\n" +
+                    "Пароль должен состоять из не менее чем 4-ёх латинских букв или цифр!", InfoModes.PASSWORD
+        )
+        val hashedPassword = sha256(password)
 
-        val newUser = User(username, password)
+        val newUser = User(username, hashedPassword)
         userManager.addUser(newUser)
         println("Пользователь \"$username\" registered successfully.")
         return true
     }
 
-    // Method to authenticate a user
-    fun authenticateUser(): Boolean {
+    override fun authenticateUser(): Boolean {
         println("Введите данные для авторизации.")
-        val username = handleStringInput("Введите имя пользователя: ", "Имя пользователя введено некорректно!\n" +
-                "Имя пользователя должно состоять из не менее чем 6-ти латинских букв или цифр!", InfoModes.USERNAME)
+        val username = handleStringInput(
+            "Введите имя пользователя: ", "Имя пользователя введено некорректно!\n" +
+                    "Имя пользователя должно состоять из не менее чем 6-ти латинских букв или цифр!", InfoModes.USERNAME
+        )
 
         if (username.isEmpty()) {
             return false
         }
 
-        // Check if the user exists
-        val user = userManager.getAll().find { it.username == username }
+        val user = userManager.getAll().find { it.getUsername() == username }
 
-        val password = handleStringInput("Введите пароль: ", "Пароль введён некорректно!\n" +
-                "Пароль должен состоять из не менее чем 4-ёх латинских букв или цифр!", InfoModes.PASSWORD)
-        //val hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt())
+        val password = handleStringInput(
+            "Введите пароль: ", "Пароль введён некорректно!\n" +
+                    "Пароль должен состоять из не менее чем 4-ёх латинских букв или цифр!", InfoModes.PASSWORD
+        )
+        val hashedPassword = sha256(password)
 
-        if (user?.password == password) {
-            // Authentication successful
-            currentUser = user
-            println("Авторизация произошла успешна. Добро пожаловать, ${user.username}!")
+        if (user?.getPasswordHash() == hashedPassword) {
+            println("Авторизация произошла успешна. Добро пожаловать, ${user.getUsername()}!")
             return true
         } else {
-            // Authentication failed
             println("Неправильно введено имя пользователя или пароль. Попробуйте ещё раз.")
             return false
         }
-    }
-
-    // Method to get the currently logged-in user
-    fun getCurrentUser(): User? {
-        return currentUser
     }
 }

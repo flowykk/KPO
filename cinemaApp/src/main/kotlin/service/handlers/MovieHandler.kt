@@ -8,41 +8,51 @@ import service.util.capitalizeFirst
 import service.util.isDirector
 import service.util.isMovieTitle
 
+interface MovieHandlerEntity {
+    fun handleMovieInput(mode: MovieModes): Movie?
+    fun editMovie(mode: MovieModes)
+    fun addMovie()
+    fun deleteMovie()
+    fun displayMovies()
+}
+
 class MovieHandler(
     private val cinemaManager: CinemaManager,
     private val consoleUI: ConsoleUI
-) {
-    fun run() {
+) : MenuEntity, MovieHandlerEntity {
+    override fun run() {
         displayMenu()
         handleMenuInput()
     }
-    private fun displayMenu() {
+
+    override fun displayMenu() {
         println("1. Посмотреть фильмы в прокате")
         println("2. Добавить фильм")
         println("3. Удалить фильм")
-        println("4. Изменить называние фильма")
+        println("4. Изменить название фильма")
         println("5. Изменить режиссёра фильма")
         println("00. Вернуться в Главное меню")
         println("0. Выход")
     }
 
-    private fun handleMenuInput() {
+    override fun handleMenuInput() {
         while (true) {
-            print("Введите число от 0 до 4 или 00: ")
+            print("Введите число от 0 до 5 или 00: ")
             val userInput: String? = readlnOrNull()
 
             when (userInput) {
                 "1" -> displayMovies()
                 "2" -> addMovie()
                 "3" -> deleteMovie()
-                "4" -> editMovie(MovieModes.EDITNAME) //TODO("editMovieName")
-                "5" -> editMovie(MovieModes.EDITDIRECTOR) //TODO("editMovieDirector()")
+                "4" -> editMovie(MovieModes.EDITNAME)
+                "5" -> editMovie(MovieModes.EDITDIRECTOR)
                 "00" -> {
                     println()
                     consoleUI.getMainMenuHandler.run()
                 }
+
                 "0" -> consoleUI.exitMenu()
-                else -> println("Неверный ввод. Пожалуйста, выберите действие от 0 до 4 или 00.")
+                else -> println("Неверный ввод. Пожалуйста, выберите действие от 0 до 5 или 00.")
             }
 
             run()
@@ -53,7 +63,7 @@ class MovieHandler(
     mode = add - adding new film
     mode = search - searching for existing film
      */
-    fun handleMovieInput(mode: MovieModes): Movie? {
+    override fun handleMovieInput(mode: MovieModes): Movie? {
         var movie: Movie? = null
 
         while (true) {
@@ -62,15 +72,19 @@ class MovieHandler(
             if (title == "00") {
                 break
             } else if (title.isEmpty() || !isMovieTitle(title)) {
-                println("Название фильма введено некорректно!\n" +
-                        "Повторите ввод ещё раз или введите 00 для выхода в меню.")
+                println(
+                    "Название фильма введено некорректно!\n" +
+                            "Повторите ввод ещё раз или введите 00 для выхода в меню."
+                )
                 continue
             }
 
             movie = cinemaManager.getMovieByName(title)
             if (((movie == null) && mode == MovieModes.SEARCH) || ((movie != null) && mode == MovieModes.ADD)) {
-                println("Фильм \"$title\" ${if (mode == MovieModes.SEARCH) "пока что отсутсвует" else "уже присутсвует"} в прокате!\n" +
-                        "Повторите ввод ещё раз или введите 00 для выхода в меню.")
+                println(
+                    "Фильм \"$title\" ${if (mode == MovieModes.SEARCH) "пока что отсутсвует" else "уже присутсвует"} в прокате!\n" +
+                            "Повторите ввод ещё раз или введите 00 для выхода в меню."
+                )
             } else {
                 if ((movie == null) && mode == MovieModes.ADD) {
                     var director: String
@@ -84,8 +98,10 @@ class MovieHandler(
                         }
 
                         if (!isDirector(director)) {
-                            println("Режиссёр введён некорректно!\n" +
-                                    "Повторите ввод ещё раз или введите 00 для выхода в меню.")
+                            println(
+                                "Режиссёр введён некорректно!\n" +
+                                        "Повторите ввод ещё раз или введите 00 для выхода в меню."
+                            )
                         } else {
                             break
                         }
@@ -101,11 +117,10 @@ class MovieHandler(
             }
         }
 
-        // println()
         return movie
     }
 
-    private fun editMovie(mode: MovieModes) {
+    override fun editMovie(mode: MovieModes) {
         displayMovies()
 
         println("Введите информацию о фильме для изменения: ")
@@ -122,8 +137,10 @@ class MovieHandler(
             }
 
             if (!isDirector(data)) {
-                println("${if (mode == MovieModes.EDITNAME) "Название фильма введено" else "Режиссёр введён"} некорректно!\n" +
-                        "Повторите ввод ещё раз или введите 00 для выхода в меню.")
+                println(
+                    "${if (mode == MovieModes.EDITNAME) "Название фильма введено" else "Режиссёр введён"} некорректно!\n" +
+                            "Повторите ввод ещё раз или введите 00 для выхода в меню."
+                )
             } else {
                 break
             }
@@ -136,27 +153,30 @@ class MovieHandler(
         }
     }
 
-    private fun addMovie() {
+    override fun addMovie() {
         displayMovies()
 
         val movie = handleMovieInput(MovieModes.ADD) ?: return
         cinemaManager.addMovie(movie)
     }
 
-    private fun deleteMovie() {
+    override fun deleteMovie() {
         displayMovies()
 
         val movie = handleMovieInput(MovieModes.SEARCH) ?: return
         cinemaManager.deleteMovie(movie)
     }
 
-    fun displayMovies() {
+    override fun displayMovies() {
         val movies = cinemaManager.getMovies()
+        if (movies.isEmpty()) {
+            println("Сейчас в прокате нету фильмов")
+            return
+        }
 
         println("\nСписок фильмов, которые сейчас в прокате:")
-        for (movie in movies) {
-            println("\"${movie.title}\" by ${movie.director}")
-        }
+        for (movie in movies) movie.viewInfo()
+
         println()
     }
 }

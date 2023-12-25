@@ -8,15 +8,34 @@ import java.time.Duration
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicInteger
 
+interface SessionEntity {
+    fun getId(): Int
+    fun markSeat(seat: Seat): Boolean
+    fun releaseSeat(seat: Seat): Boolean
+    fun viewSeats()
+}
+
 class Session @JsonCreator constructor(
     @JsonProperty("movie") val movie: Movie,
-    @JsonProperty("date") val date: String,
-    @JsonProperty("startTime") val startTime: String,
-    @JsonProperty("endTime") val endTime: String,
-) {
-    //@JsonIgnore
+    @JsonProperty("date") var date: String,
+    @JsonProperty("startTime") var startTime: String,
+    @JsonProperty("endTime") var endTime: String,
+) : SessionEntity, CommonEntity {
     @JsonProperty("availableSeats")
     private val availableSeats: MutableList<Seat> = mutableListOf()
+    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+    // Автоинкрементируемый Id сеанса
+    @JsonProperty("id")
+    private val id: Int = idCounter.getAndIncrement()
+
+    @get:JsonProperty("duration")
+    private val duration: Int
+        get() {
+            val start = LocalTime.parse(startTime, timeFormatter)
+            val end = LocalTime.parse(endTime, timeFormatter)
+            return Duration.between(start, end).toMinutes().toInt()
+        }
 
     init {
         for (row in 1..CinemaManager.numRows) {
@@ -26,25 +45,12 @@ class Session @JsonCreator constructor(
             }
         }
     }
-    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
-    companion object {
-        private val idCounter = AtomicInteger(1)
+    override fun getId(): Int {
+        return id
     }
 
-    // Автоинкрементируемый Id сеанса
-    @JsonProperty("id")
-    val id: Int = idCounter.getAndIncrement()
-
-    @get:JsonProperty("duration")
-    val duration: Int
-        get() {
-            val start = LocalTime.parse(startTime, timeFormatter)
-            val end = LocalTime.parse(endTime, timeFormatter)
-            return Duration.between(start, end).toMinutes().toInt()
-        }
-
-    fun markSeat(seat: Seat): Boolean {
+    override fun markSeat(seat: Seat): Boolean {
         if (availableSeats.contains(seat)) {
             availableSeats.remove(seat)
             return true
@@ -53,7 +59,7 @@ class Session @JsonCreator constructor(
         return false
     }
 
-    fun releaseSeat(seat: Seat): Boolean {
+    override fun releaseSeat(seat: Seat): Boolean {
         if (!availableSeats.contains(seat)) {
             availableSeats.add(seat)
             return true
@@ -63,7 +69,7 @@ class Session @JsonCreator constructor(
     }
 
     // либо сделать этот метод методом ConsoleUI
-    fun viewSeats() {
+    override fun viewSeats() {
         println("      =============ЭКРАН=============")
         for (row in 1..CinemaManager.numRows) {
             print("Ряд $row ")
@@ -80,4 +86,17 @@ class Session @JsonCreator constructor(
         println()
     }
 
+    override fun viewInfo() {
+        println("- ID Сеанса: $id")
+        println("- Фильм \"${movie.title}\" by ${movie.director}")
+        println("- Дата сеанса: $date")
+        println("- Время начала: $startTime")
+        println("- Время конца: $endTime")
+        println("- Длительность фильма: $duration минут")
+        println()
+    }
+
+    companion object {
+        private val idCounter = AtomicInteger(1)
+    }
 }
