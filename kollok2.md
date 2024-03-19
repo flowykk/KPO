@@ -123,7 +123,9 @@ ERM (Entity-Relationship Model) — это концептуальная моде
 
 ### Вид представления связей 
 
-![image](https://github.com/flowykk/KPO-hse/assets/71427624/1b39b6f9-2a00-4fca-a3a5-d0ff5f9996eb)
+<div align="center">
+  <img src="https://github.com/flowykk/KPO-hse/assets/71427624/1b39b6f9-2a00-4fca-a3a5-d0ff5f9996eb" width="600"> 
+</div>
 
 ### Что такое сущность в ERM?
 
