@@ -40,8 +40,6 @@
 - Когда нужен доступ к объекту из разных частей приложения без передачи его по всему коду
 - Для обеспечения доступа к ресурсам, которые могут быть общими для всего приложения
 
-## + 
-
 ![image](https://github.com/flowykk/KPO-hse/assets/71427624/8b30d8c0-e028-4ede-99b0-5bb5be9fbb85)
 
 ### Проблемы при использовании Singleton в многопоточной среде?
@@ -77,6 +75,8 @@ class Database is
                     Database.instance = new Database()
         return Database.instance
 ```
+
+## + 
 
 ![image](https://github.com/flowykk/KPO-hse/assets/71427624/941f7604-1b84-4ce8-bbd3-342a379c79d1)
 
