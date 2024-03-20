@@ -49,6 +49,33 @@
 
 ### Пример реализации Singleton
 
+```kotlin
+class Database is
+    // The field for storing the singleton instance should be
+    // declared static.
+    private static field instance: Database
+
+    // The singleton's constructor should always be private to
+    // prevent direct construction calls with the `new`
+    // operator.
+    private constructor Database() is
+        // Some initialization code, such as the actual
+        // connection to a database server.
+        // ...
+
+    // The static method that controls access to the singleton
+    // instance.
+    public static method getInstance() is
+        if (Database.instance == null) then
+            acquireThreadLock() and then
+                // Ensure that the instance hasn't yet been
+                // initialized by another thread while this one
+                // has been waiting for the lock's release.
+                if (Database.instance == null) then
+                    Database.instance = new Database()
+        return Database.instance
+```
+
 ![image](https://github.com/flowykk/KPO-hse/assets/71427624/941f7604-1b84-4ce8-bbd3-342a379c79d1)
 
 ## 3. Что такое паттерн Наблюдатель и в каких случаях его стоит применять? Какие преимущества дает использование паттерна Наблюдатель? Приведите пример, где этот паттерн может быть использован в приложении.
