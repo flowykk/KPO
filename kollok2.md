@@ -76,7 +76,7 @@ class Database is
         return Database.instance
 ```
 
-## + 
+### + 
 
 ![image](https://github.com/flowykk/KPO-hse/assets/71427624/941f7604-1b84-4ce8-bbd3-342a379c79d1)
 
