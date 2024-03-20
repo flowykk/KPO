@@ -30,11 +30,11 @@
 
 ## 2. Опишите паттерн Singleton и сценарии, в которых его применение оправдано. Какие проблемы могут возникнуть при использовании Singleton в многопоточной среде? Приведите пример реализации Singleton в Java/Kotlin.
 
-### Опишите паттерн Singleton и сценарии, в которых его применение оправдано.
+### Опишите паттерн Singleton
 
 **Синглтон** — это **порождающий** шаблон проектирования, который позволяет гарантировать, что класс имеет только один экземпляр, обеспечивая при этом глобальную точку доступа к этому экземпляру.
 
-**Оправданное применение:**
+### Оправданное применение
 
 - Шаблон **Singleton** используется, когда класс в программе должен иметь только один экземпляр, доступный всем клиентам; например, один объект базы данных, используемый разными частями программы
 - Когда нужен доступ к объекту из разных частей приложения без передачи его по всему коду
@@ -82,11 +82,12 @@ class Database is
 
 ## 3. Что такое паттерн Наблюдатель и в каких случаях его стоит применять? Какие преимущества дает использование паттерна Наблюдатель? Приведите пример, где этот паттерн может быть использован в приложении.
 
-### Что такое паттерн Наблюдатель и в каких случаях его стоит применять? 
+### Что такое паттерн Наблюдатель
 
 **Наблюдатель** - это поведенческий паттерн проектирования, который создаёт механизм подписки, позволяющий одним объектам следить и реагировать на события, происходящие в других объектах.
 
-**Применение**
+### Применение
+
 - Этот паттерн используется, когда изменения состояния одного объекта могут потребовать изменения других объектов, а фактический набор объектов заранее неизвестен или изменяется динамически, то есть когда один объект должен оповещать множество других объектов без знания о них напрямую
 - **Наблюдатель** используется, когда одни объекты в вашем приложении должны наблюдать за другими, но только в течение ограниченного времени или в особых случаях
 
@@ -100,11 +101,11 @@ class Database is
 
 ## 4. Объясните назначение и принцип работы паттерна Адаптер. В чем преимущество использования Адаптера при интеграции сторонних библиотек или API? Приведите пример кода, где паттерн Адаптер помогает взаимодействовать двум несовместимым интерфейсам.
 
-### Объясните назначение и принцип работы паттерна Адаптер. 
+### Объясните назначение
 
 **Адаптер** - структурный паттерн проектирования, который позволяет объектам с несовместимыми интерфейсами работать вместе.
 
-**Принцип работы:**
+### Принцип работы
 - Адаптер имеет интерфейс, который совместим с одним из объектов, поэтому уэтот объект может свободно вызывать методы адаптера
 - Адаптер получает эти вызовы и перенаправляет их второму объекту, но уже в том формате и последовательности, которые понятны второму объекту
 
@@ -150,27 +151,246 @@ fun main() {
 
 ## 5. Опишите паттерн Стратегия и ситуации, где его применение целесообразно. В чем заключается гибкость паттерна Стратегия? Приведите пример кода с использованием паттерна Стратегия.
 
-### Опишите паттерн Стратегия и ситуации, где его применение целесообразно. 
+### Опишите паттерн Стратегия и ситуации
+
+**Стратегия** - поведенческий паттерн проектирования, который определяет семейство схожих алгоритмов и помещает каждый из них в собственный класс, после чего алгоритмы можно взаимозаменять прямо во время исполнения программы.
+
+### Применение
+
+- Паттерн **Стратегия** используется, если вы хотите использовать различные варианты алгоритма внутри объекта и иметь возможность переключаться с одного алгоритма на другой во время выполнения
+- Шаблон используется, когда у вас много похожих классов, которые отличаются только способом выполнения некоторого поведения
+- Используйте шаблон, чтобы изолировать бизнес-логику класса от деталей реализации алгоритмов, которые могут быть не столь важны в контексте этой логики
+- Паттерн используется, когда в вашем классе есть массивный условный оператор, который переключается между различными вариантами одного и того же алгоритма
 
 ### В чем заключается гибкость паттерна Стратегия? 
 
-### Приведите пример кода с использованием паттерна Стратегия.
+Гибкость паттерна заключается в том, что он позволяет добавлять новые стратегии без изменения контекста и клиентского кода. Клиент может выбирать нужную стратегию во время выполнения программы, в зависимости от изменяющихся условий или требований.
+
+### Приведите пример кода с использованием паттерна Стратегия
+
+```kotlin
+// Интерфейс стратегии
+interface PaymentStrategy {
+    fun pay(amount: Int)
+}
+
+// Конкретная стратегия оплаты кредитной картой
+class CreditCardPaymentStrategy(private val cardNumber: String, private val cvv: String) : PaymentStrategy {
+    override fun pay(amount: Int) {
+        println("Paying $amount using credit card $cardNumber")
+    }
+}
+
+// Конкретная стратегия оплаты через PayPal
+class PayPalPaymentStrategy(private val email: String, private val password: String) : PaymentStrategy {
+    override fun pay(amount: Int) {
+        println("Paying $amount using PayPal account $email")
+    }
+}
+
+// Класс контекста, который использует стратегию оплаты
+class ShoppingCart(private val paymentStrategy: PaymentStrategy) {
+    fun checkout(amount: Int) {
+        paymentStrategy.pay(amount)
+    }
+}
+
+fun main() {
+    // Создаем объекты стратегий
+    val creditCardStrategy = CreditCardPaymentStrategy("1234567890123456", "123")
+    val paypalStrategy = PayPalPaymentStrategy("example@example.com", "password")
+
+    // Используем разные стратегии оплаты
+    val cart1 = ShoppingCart(creditCardStrategy)
+    cart1.checkout(100)
+
+    val cart2 = ShoppingCart(paypalStrategy)
+    cart2.checkout(200)
+}
+```
 
 ## 6.  Определите паттерн Фабрика и объясните, зачем он нужен. Какие проблемы решает Фабричный метод, и как он отличается от Абстрактной Фабрики? Приведите пример реализации Фабричного метода.
 
-### Определите паттерн Фабрика и объясните, зачем он нужен. 
+### Определите паттерн Фабрика
 
-### Какие проблемы решает Фабричный метод, и как он отличается от Абстрактной Фабрики? 
+**Фабричный метод** - это порождающий паттерн проектирования, который определяет общий интерфейс для создания объектов в суперклассе, позволяя изменять тип создаваемых объектов.
+
+### Зачем нужна Фабрика?
+
+- Упрощение процесса создания объектов, избавляя клиентский код от прямых зависимостей от конкретных классов
+- Предоставления гибкости при создании объектов, позволяя подклассам решать, какой именно объект создавать
+- Позволяет добавлять новые типы объектов без изменения существующего кода
+
+### Какие проблемы решает Фабричный метод?
+
+- **Уменьшение связанности кода:** клиентский код не зависит от конкретных классов создаваемых объектов.
+- **Увеличение гибкости:** позволяет легко вносить изменения в способ создания объектов и добавлять новые типы объектов.
+- **Повышение расширяемости:** новые типы объектов можно добавить, реализуя новые подклассы фабричного метода.
+
+### Отличия от Абстрактной Фабрики? 
+
+- **Фабричный метод** определяет метод создания объекта в абстрактном классе или интерфейсе и делегирует создание конкретных объектов подклассам. **Абстрактная Фабрика** определяет интерфейс для создания семейств взаимосвязанных объектов, не привязываясь к конкретным классам.
+- **Фабричный метод** создает один объект, **Абстрактная фабрика** - семейство взаимосвязанных объектов.
+- **Фабричный метод** использует наследование, чтобы делегировать создание объектов подклассам, в то время как **Абстрактная Фабрика** использует композицию, предоставляя клиенту объект фабрики, который создает семейство объектов.
 
 ### Приведите пример реализации Фабричного метода.
 
+```kotlin
+// Интерфейс продукта
+interface Product {
+    fun operation()
+}
+
+// Конкретные реализации продукта
+class ConcreteProductA : Product {
+    override fun operation() {
+        println("Concrete Product A operation")
+    }
+}
+
+class ConcreteProductB : Product {
+    override fun operation() {
+        println("Concrete Product B operation")
+    }
+}
+
+// Абстрактный класс создателя (Фабричный метод)
+abstract class Creator {
+    abstract fun factoryMethod(): Product
+    
+    fun someOperation() {
+        val product = factoryMethod()
+        product.operation()
+    }
+}
+
+// Конкретные реализации создателя
+class ConcreteCreatorA : Creator() {
+    override fun factoryMethod(): Product {
+        return ConcreteProductA()
+    }
+}
+
+class ConcreteCreatorB : Creator() {
+    override fun factoryMethod(): Product {
+        return ConcreteProductB()
+    }
+}
+
+fun main() {
+    val creatorA: Creator = ConcreteCreatorA()
+    creatorA.someOperation() // Вывод: Concrete Product A operation
+    
+    val creatorB: Creator = ConcreteCreatorB()
+    creatorB.someOperation() // Вывод: Concrete Product B operation
+}
+```
+
 ## 7. Что такое паттерн Прокси и в каких случаях его использование наиболее оправдано? Опишите различия между статическим и динамическим прокси. Приведите пример использования Прокси в программе.
 
-## Что такое паттерн Прокси и в каких случаях его использование наиболее оправдано? 
+## Что такое паттерн Прокси
+
+**Прокси** - это структурный паттерн проектирования, который предоставляет заместитель или placeholder для другого объекта, чтобы контролировать доступ к нему. Прокси обеспечивает тот же интерфейс, что и реальный объект, и может выполнять некоторые дополнительные действия при доступе к нему.
+
+## Оправданное применение
+
+- **Ленивая инициализация (виртуальный прокси):** Это когда у вас есть тяжеловесный сервисный объект, который тратит системные ресурсы, постоянно находясь в рабочем состоянии, даже если он вам нужен только время от времени
+- **Контроль доступа (прокси защиты):** Это когда вы хотите, чтобы только определенные клиенты могли использовать объект службы; например, когда ваши объекты являются важными частями операционной системы, а клиенты — различными запускаемыми приложениями (в том числе вредоносными)
+- **Локальное выполнение удаленного сервиса (удаленный прокси):** Это когда объект службы находится на удаленном сервере. В этом случае прокси передает клиентский запрос по сети, беря на себя все неприятные детали работы с сетью
+- **Запросы на регистрацию (прокси-сервер):** Это когда вы хотите вести историю запросов к сервисному объекту. Прокси-сервер может регистрировать каждый запрос перед его передачей в службу
 
 ## Опишите различия между статическим и динамическим прокси. 
 
+- **Статический прокси** создается во время компиляции, а **Динамический** - во время выполнения.
+- **Статический прокси** требует явного создания класса прокси для каждого интерфейса или объекта, в то время как **Динамический** прокси создается на основе интерфейса, который необходимо проксировать.
+- **Динамический прокси** обеспечивает большую гибкость, так как не требует написания специальных классов прокси для каждого интерфейса.
+
 ## Приведите пример использования Прокси в программе.
+
+```kotlin
+// The interface of a remote service.
+interface ThirdPartyYouTubeLib is
+    method listVideos()
+    method getVideoInfo(id)
+    method downloadVideo(id)
+
+// The concrete implementation of a service connector. Methods
+// of this class can request information from YouTube. The speed
+// of the request depends on a user's internet connection as
+// well as YouTube's. The application will slow down if a lot of
+// requests are fired at the same time, even if they all request
+// the same information.
+class ThirdPartyYouTubeClass implements ThirdPartyYouTubeLib is
+    method listVideos() is
+        // Send an API request to YouTube.
+
+    method getVideoInfo(id) is
+        // Get metadata about some video.
+
+    method downloadVideo(id) is
+        // Download a video file from YouTube.
+
+// To save some bandwidth, we can cache request results and keep
+// them for some time. But it may be impossible to put such code
+// directly into the service class. For example, it could have
+// been provided as part of a third party library and/or defined
+// as `final`. That's why we put the caching code into a new
+// proxy class which implements the same interface as the
+// service class. It delegates to the service object only when
+// the real requests have to be sent.
+class CachedYouTubeClass implements ThirdPartyYouTubeLib is
+    private field service: ThirdPartyYouTubeLib
+    private field listCache, videoCache
+    field needReset
+
+    constructor CachedYouTubeClass(service: ThirdPartyYouTubeLib) is
+        this.service = service
+
+    method listVideos() is
+        if (listCache == null || needReset)
+            listCache = service.listVideos()
+        return listCache
+
+    method getVideoInfo(id) is
+        if (videoCache == null || needReset)
+            videoCache = service.getVideoInfo(id)
+        return videoCache
+
+    method downloadVideo(id) is
+        if (!downloadExists(id) || needReset)
+            service.downloadVideo(id)
+
+// The GUI class, which used to work directly with a service
+// object, stays unchanged as long as it works with the service
+// object through an interface. We can safely pass a proxy
+// object instead of a real service object since they both
+// implement the same interface.
+class YouTubeManager is
+    protected field service: ThirdPartyYouTubeLib
+
+    constructor YouTubeManager(service: ThirdPartyYouTubeLib) is
+        this.service = service
+
+    method renderVideoPage(id) is
+        info = service.getVideoInfo(id)
+        // Render the video page.
+
+    method renderListPanel() is
+        list = service.listVideos()
+        // Render the list of video thumbnails.
+
+    method reactOnUserInput() is
+        renderVideoPage()
+        renderListPanel()
+
+// The application can configure proxies on the fly.
+class Application is
+    method init() is
+        aYouTubeService = new ThirdPartyYouTubeClass()
+        aYouTubeProxy = new CachedYouTubeClass(aYouTubeService)
+        manager = new YouTubeManager(aYouTubeProxy)
+        manager.reactOnUserInput()
+```
 
 # Многопоточность
 
